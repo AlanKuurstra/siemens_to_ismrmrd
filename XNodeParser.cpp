@@ -68,7 +68,9 @@ namespace XProtocol
                 ;
 
             quoted_string =
-                '"' >> lexeme[*(char_ - '"')[_val += _1]] >> '"';
+                '"'
+                >> lexeme[*(char_ - '"')[_val += _1] >> *((lit("\"\""))[_val += "\""]>>*(char_ - '"')[_val += _1])]
+                >> '"';
 
             param_generic =
                 '<'
