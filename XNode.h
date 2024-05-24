@@ -100,6 +100,21 @@ public:
 	}
 };
 
+class setNodeName : public boost::static_visitor<> {
+public:
+	setNodeName(std::string name)
+			: name_(name)
+	{}
+
+	template <typename T> void operator()(T& node) const
+	{
+		node.name_ = name_;
+	}
+
+protected:
+	std::string name_;
+};
+
 class getChildNodeByIndex : public boost::static_visitor<const XNode*> {
 public:
 	getChildNodeByIndex(unsigned int idx)

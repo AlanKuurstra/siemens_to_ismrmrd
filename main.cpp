@@ -82,10 +82,10 @@ readParcFileEntries(std::ifstream &siemens_dat, const MrParcRaidFileHeader &Parc
 
 std::vector<MeasurementHeaderBuffer> readMeasurementHeaderBuffers(std::ifstream &siemens_dat, uint32_t num_buffers);
 
-std::string readXmlConfig(bool debug_xml, const std::string &parammap_file_content, uint32_t num_buffers,
-                          std::vector<MeasurementHeaderBuffer> &buffers, std::vector<std::string> &wip_double,
-                          Trajectory &trajectory, long &dwell_time_0, long &max_channels, long &radial_views, long* global_table_pos,
-                          std::string &baseLine_string, std::string &protocol_name, std::string& software_version);
+XProtocol::XNode parseXProt(bool debug_xml, uint32_t num_buffers, std::vector<MeasurementHeaderBuffer> &buffers,
+                            std::vector<std::string> &wip_double, Trajectory &trajectory, long &dwell_time_0,
+                            long &max_channels, long &radial_views, long* global_table_pos,
+                            std::string &baseLine_string, std::string &protocol_name, std::string& software_version);
 
 std::string parseXML(bool debug_xml, const std::string &parammap_xsl_content, std::string &schema_file_name_content,
                      const std::string xml_config);
@@ -731,17 +731,6 @@ int main(int argc, char* argv[]) {
             return -1;
         }
 
-        // Parameter map
-        std::string default_parammap;
-        if (VBFILE) {
-            default_parammap = "IsmrmrdParameterMap_Siemens_VB17.xml";
-        } else {
-            default_parammap = "IsmrmrdParameterMap_Siemens.xml";
-        }
-        std::string parammap_actual_file = select_file(parammap_file, default_parammap, all_measurements, currentMeas);
-        std::string parammap_file_content = get_file_content(parammap_actual_file);
-        std::cout << "Using parameter map: " << parammap_actual_file << std::endl;
-
         std::cout << "This file contains " << ParcRaidHead.count_ << " measurement(s)." << std::endl;
 
         std::vector<MrParcRaidFileEntry> ParcFileEntries = readParcFileEntries(siemens_dat, ParcRaidHead, VBFILE);
@@ -776,9 +765,23 @@ int main(int argc, char* argv[]) {
         std::string baseLineString;
         std::string protocol_name;
         std::string software_version;
-        std::string xml_config = readXmlConfig(debug_xml, parammap_file_content, num_buffers, buffers, wip_double,
-            trajectory, dwell_time_0,
-            max_channels, radial_views, global_table_pos, baseLineString, protocol_name, software_version);
+
+        auto n = parseXProt(debug_xml, num_buffers, buffers, wip_double, trajectory, dwell_time_0, max_channels,
+                            radial_views, global_table_pos, baseLineString, protocol_name, software_version);
+
+        std::string xml_config;
+        if (parammap_file.empty()) {
+            auto rootNodeParamMap = boost::get<XProtocol::XNodeParamMap>(n);
+            rootNodeParamMap.name_ = "siemens";
+            xml_config = XProtocol::getXMLString()(rootNodeParamMap);
+            std::cout << "Using entire XProtocol as parameter map" << std::endl;
+        }
+        else {
+            std::string parammap_actual_file = select_file(parammap_file, "", all_measurements, currentMeas);
+            std::string parammap_file_content = get_file_content(parammap_actual_file);
+            std::cout << "Using parameter map: " << parammap_actual_file << std::endl;
+            xml_config = ProcessParameterMap(n, parammap_file_content.c_str());
+        }
 
         // whether this scan is a adjustment scan
         bool isAdjustCoilSens = false;
@@ -1648,10 +1651,10 @@ std::string parseXML(bool debug_xml, const std::string &parammap_xsl_content, st
     return xml_result;
 }
 
-std::string readXmlConfig(bool debug_xml, const std::string &parammap_file_content, uint32_t num_buffers,
-                          std::vector<MeasurementHeaderBuffer> &buffers, std::vector<std::string> &wip_double,
-                          Trajectory &trajectory, long &dwell_time_0, long &max_channels, long &radial_views,
-                          long *global_table_pos, std::string &baseLineString, std::string &protocol_name, std::string& software_version) {
+XProtocol::XNode parseXProt(bool debug_xml, uint32_t num_buffers, std::vector<MeasurementHeaderBuffer> &buffers,
+                            std::vector<std::string> &wip_double, Trajectory &trajectory, long &dwell_time_0,
+                            long &max_channels, long &radial_views, long *global_table_pos, std::string &baseLineString,
+                            std::string &protocol_name, std::string& software_version) {
     dwell_time_0 = 0;
     max_channels = 0;
     radial_views = 0;
@@ -2040,11 +2043,7 @@ std::string readXmlConfig(bool debug_xml, const std::string &parammap_file_conte
                 software_version = temp[0];
             }
         }
-
-        //xml_config = ProcessParameterMap(n, parammap_file);
-        return ProcessParameterMap(n, parammap_file_content.c_str());
-
-
+        return n;
     }
     throw std::runtime_error("No Meas buffer found in Siemens dataset");
 }

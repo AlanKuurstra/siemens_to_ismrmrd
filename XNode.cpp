@@ -1,4 +1,5 @@
 #include "XNode.h"
+#include "tinyxml.h"
 
 #include <boost/spirit/include/phoenix_core.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
@@ -7,6 +8,8 @@
 #include <boost/fusion/include/adapt_struct.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
+
+#include <libxml/parser.h>
 
 #include <iostream>
 #include <stdlib.h>
@@ -91,20 +94,62 @@ const XNode*  getChildNodeByIndex::operator()(const XNodeParamValue& node)
 	return 0; //Param values do not have children
 }
 
+class encodeXNodeVal : public boost::static_visitor<XNodeValueVariant> {
+public:
+	XNodeValueVariant operator()(const std::string& val) const {
+		std::string out;
+		TiXmlBase::EncodeString(val, &out);
+		return out;
+	};
 
-std::string getXMLString::operator()(const XNodeParamMap& node) const
-{
-	std::stringstream str;
-	str << "<" << node.name_ << ">" << std::endl;
-	BOOST_FOREACH(XNode const& cnode, node.children_) {
-		str << boost::apply_visitor(getXMLString(), cnode);
+	XNodeValueVariant operator()(const long& val) const { return val; };
+
+	XNodeValueVariant operator()(const double& val) const { return val; };
+};
+
+bool validXmlName(const std::string& elementName) {
+	bool valid = true;
+	std::string xml = "<" + elementName + ">" + "</" + elementName + ">";
+
+	auto doc = xmlReadMemory(xml.c_str(), xml.size(), NULL, NULL, XML_PARSE_NOERROR);
+	if (doc == NULL) {
+		valid = false;
+	} else {
+		xmlFreeDoc(doc);
 	}
-	str << "</" << node.name_ << ">" << std::endl;
+	return valid;
+};
+
+void openTag(std::stringstream& ss, std::string& name) {
+	ss << "<";
+	if (validXmlName(name)) {
+		ss << name;
+	} else {
+		std::string encoded;
+		TiXmlBase::EncodeString(name, &encoded);
+		auto invalidTagName = "invalid";
+		ss << invalidTagName << " original=\"" << encoded << '"';
+		name = invalidTagName;
+	}
+	ss << ">" << std::endl;
+}
+
+void closeTag(std::stringstream& ss, const std::string& name) {
+	ss << "</" << name << ">" << std::endl;
+}
+
+std::string getXMLString::operator()(const XNodeParamMap& node) const {
+	std::stringstream str;
+	auto name = node.name_;
+	openTag(str, name);
+	BOOST_FOREACH(XNode const &cnode, node.children_) {
+					str << boost::apply_visitor(getXMLString(), cnode);
+				}
+	closeTag(str, name);
 	return str.str();
 }
 
-std::string getXMLString::operator()(const XNodeParamArray& node) const
-{
+std::string getXMLString::operator()(const XNodeParamArray& node) const {
 	if (node.children_.size() == 0) { //Children have not yet been expanded
 		if (!const_cast<XNodeParamArray&>(node).expand_children()) {
 			std::cout << "Failed to expand children" << std::endl;
@@ -112,25 +157,28 @@ std::string getXMLString::operator()(const XNodeParamArray& node) const
 		}
 	}
 	std::stringstream str;
-	str << "<" << node.name_ << ">" << std::endl;
-	BOOST_FOREACH(XNode const& cnode, node.children_) {
-		str << boost::apply_visitor(getXMLString(), cnode);
-	}
+	auto name = node.name_;
+	openTag(str, name);
+	BOOST_FOREACH(XNode const &cnode, node.children_) {
+					str << apply_visitor(getXMLString(), cnode) << std::endl;
+				}
 	/*
 	for (unsigned int i = 0; i < node.values_.size(); i++) {
 		str << "<" << node.name_ << ">" << node.values_[i] << "</" << node.name_ << ">" << std::endl;
 	}
 	*/
-	str << "</" << node.name_ << ">" << std::endl;
+	closeTag(str, name);
 	return str.str();
 }
 
-std::string getXMLString::operator()(const XNodeParamValue& node) const
-{
+std::string getXMLString::operator()(const XNodeParamValue& node) const {
 	std::stringstream str;
+	auto name = node.name_;
+	openTag(str, name);
 	for (unsigned int i = 0; i < node.values_.size(); i++) {
-		str << "<" << node.name_ << ">" << node.values_[i] << "</" << node.name_ << ">" << std::endl;
+		str << "<value>" << boost::apply_visitor(encodeXNodeVal(), node.values_[i]) << "</value>" << std::endl;
 	}
+	closeTag(str, name);
 	return str.str();
 }
 
@@ -172,6 +220,9 @@ bool setNodeValues :: operator()(XNodeParamValue& node) {
 
 bool XNodeParamArray :: expand_children() {
 	if (!children_.size()) {
+		if (boost::apply_visitor(getNodeName(), default_).empty()){
+			boost::apply_visitor(setNodeName("value"), default_);
+		}
 		for (unsigned int i = 0; i < values_.size(); i++) {
 			children_.push_back(default_);
 			if (values_[i].values_.size() == 0 && values_[i].children_.size()==0) { //Empty values container, occurs sometimes in the files.
