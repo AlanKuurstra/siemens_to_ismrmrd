@@ -30,8 +30,8 @@
 <p><s>MEAS.sSliceArray.asSlice.0.dThickness</s>             <d>siemens.MEAS.sSliceArray.asSlice.s0.dThickness</d></p>
 <p><s>MEAS.sAngio.sFlowArray.lSize</s>                      <d>siemens.MEAS.sAngio.sFlowArray.lSize</d></p>
 <p><s>IRIS.DERIVED.phaseOversampling</s>                    <d>siemens.IRIS.DERIVED.phaseOversampling</d></p>
-<p><s>IRIS.DERIVED.ImageColumns</s>                         <d>siemens.IRIS.DERIVED.imageColumns</d></p>
-<p><s>IRIS.DERIVED.ImageLines</s>                           <d>siemens.IRIS.DERIVED.imageLines</d></p>
+<p><s>IRIS.DERIVED.ImageColumns</s>                         <d>siemens.IRIS.DERIVED.ImageColumns</d></p>
+<p><s>IRIS.DERIVED.ImageLines</s>                           <d>siemens.IRIS.DERIVED.ImageLines</d></p>
 <p><s>YAPS.iMaxNoOfRxChannels</s>                                                       <d>siemens.YAPS.iMaxNoOfRxChannels</d></p>
 <p><s>YAPS.iNoOfFourierColumns</s>                                                      <d>siemens.YAPS.iNoOfFourierColumns</d></p>
 <p><s>YAPS.iNoOfFourierLines</s>                                                        <d>siemens.YAPS.iNoOfFourierLines</d></p>

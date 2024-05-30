@@ -59,8 +59,8 @@
         <p><s>MEAS.sInlineCardioEval.lInlineEvaMode</s>                         <d>siemens.MEAS.sInlineCardioEval.lInlineEvaMode</d></p>
 
         <p><s>IRIS.DERIVED.phaseOversampling</s>                                <d>siemens.IRIS.DERIVED.phaseOversampling</d></p>
-        <p><s>IRIS.DERIVED.ImageColumns</s>                                     <d>siemens.IRIS.DERIVED.imageColumns</d></p>
-        <p><s>IRIS.DERIVED.ImageLines</s>                                       <d>siemens.IRIS.DERIVED.imageLines</d></p>
+        <p><s>IRIS.DERIVED.ImageColumns</s>                                     <d>siemens.IRIS.DERIVED.ImageColumns</d></p>
+        <p><s>IRIS.DERIVED.ImageLines</s>                                       <d>siemens.IRIS.DERIVED.ImageLines</d></p>
 
         <p><s>YAPS.iNoOfFourierColumns</s>                                      <d>siemens.YAPS.iNoOfFourierColumns</d></p>
         <p><s>YAPS.iNoOfFourierLines</s>                                        <d>siemens.YAPS.iNoOfFourierLines</d></p>
@@ -89,9 +89,12 @@
         <p><s>DICOM.lGlobalTablePosCor</s>                                      <d>siemens.DICOM.lGlobalTablePosCor</d></p>
         <p><s>DICOM.lGlobalTablePosTra</s>                                      <d>siemens.DICOM.lGlobalTablePosTra</d></p>
         <p><s>MEAS.tProtocolName</s>                                            <d>siemens.MEAS.tProtocolName</d></p>
-        <p><s>YAPS.ReconMeasDependencies.0</s>                                  <d>siemens.YAPS.ReconMeasDependencies.RFMap</d></p>
-        <p><s>YAPS.ReconMeasDependencies.1</s>                                  <d>siemens.YAPS.ReconMeasDependencies.SenMap</d></p>
-        <p><s>YAPS.ReconMeasDependencies.2</s>                                  <d>siemens.YAPS.ReconMeasDependencies.Noise</d></p>
+        <!-- RFMap dependency -->
+        <p><s>YAPS.ReconMeasDependencies.0</s>                                  <d>siemens.YAPS.ReconMeasDependencies.0</d></p>
+        <!-- SenMap dependency -->
+        <p><s>YAPS.ReconMeasDependencies.1</s>                                  <d>siemens.YAPS.ReconMeasDependencies.1</d></p>
+        <!-- Noise dependency -->
+        <p><s>YAPS.ReconMeasDependencies.2</s>                                  <d>siemens.YAPS.ReconMeasDependencies.2</d></p>
         <!-- acquisitionSystemInformationType --> 
         <p><s>DICOM.Manufacturer</s>                                            <d>siemens.DICOM.Manufacturer</d></p>
         <p><s>DICOM.ManufacturersModelName</s>                                  <d>siemens.DICOM.ManufacturersModelName</d></p>

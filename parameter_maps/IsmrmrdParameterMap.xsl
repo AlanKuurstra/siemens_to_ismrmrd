@@ -186,7 +186,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 					<x><xsl:value-of select="siemens/YAPS/iRoFTLength"/></x>		
 				</xsl:when>	
 				<xsl:otherwise>
-					<x><xsl:value-of select="siemens/IRIS/DERIVED/imageColumns"/></x>
+					<x><xsl:value-of select="siemens/IRIS/DERIVED/ImageColumns"/></x>
 				</xsl:otherwise>
 			</xsl:choose>		
 		
@@ -208,8 +208,8 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     </encodedSpace>
     <reconSpace>
 		<matrixSize>
-			<x><xsl:value-of select="siemens/IRIS/DERIVED/imageColumns"/></x>		
-			<y><xsl:value-of select="siemens/IRIS/DERIVED/imageLines"/></y>
+			<x><xsl:value-of select="siemens/IRIS/DERIVED/ImageColumns"/></x>
+			<y><xsl:value-of select="siemens/IRIS/DERIVED/ImageLines"/></y>
 			<xsl:choose>
 				<xsl:when test="siemens/YAPS/i3DFTLength = 1">
 					<z>1</z>

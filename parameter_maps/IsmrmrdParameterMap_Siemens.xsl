@@ -135,32 +135,32 @@
                     <xsl:value-of select="siemens/MEAS/tProtocolName"/>
                 </protocolName>
 
-                <xsl:if test="siemens/YAPS/ReconMeasDependencies/RFMap > 0">
+                <xsl:if test="siemens/YAPS/ReconMeasDependencies/0 > 0">
                     <measurementDependency>
                         <dependencyType>RFMap</dependencyType>
                         <measurementID>
                             <xsl:value-of
-                                    select="concat(string(siemens/DICOM/DeviceSerialNumber), $strSeperator, $patientID, $strSeperator, $studyID, $strSeperator, string(siemens/YAPS/ReconMeasDependencies/RFMap))"/>
+                                    select="concat(string(siemens/DICOM/DeviceSerialNumber), $strSeperator, $patientID, $strSeperator, $studyID, $strSeperator, string(siemens/YAPS/ReconMeasDependencies/0))"/>
                         </measurementID>
                     </measurementDependency>
                 </xsl:if>
 
-                <xsl:if test="siemens/YAPS/ReconMeasDependencies/SenMap > 0">
+                <xsl:if test="siemens/YAPS/ReconMeasDependencies/1 > 0">
                     <measurementDependency>
                         <dependencyType>SenMap</dependencyType>
                         <measurementID>
                             <xsl:value-of
-                                    select="concat(string(siemens/DICOM/DeviceSerialNumber), $strSeperator, $patientID, $strSeperator, $studyID, $strSeperator, string(siemens/YAPS/ReconMeasDependencies/SenMap))"/>
+                                    select="concat(string(siemens/DICOM/DeviceSerialNumber), $strSeperator, $patientID, $strSeperator, $studyID, $strSeperator, string(siemens/YAPS/ReconMeasDependencies/1))"/>
                         </measurementID>
                     </measurementDependency>
                 </xsl:if>
 
-                <xsl:if test="siemens/YAPS/ReconMeasDependencies/Noise > 0">
+                <xsl:if test="siemens/YAPS/ReconMeasDependencies/2 > 0">
                     <measurementDependency>
                         <dependencyType>Noise</dependencyType>
                         <measurementID>
                             <xsl:value-of
-                                    select="concat(string(siemens/DICOM/DeviceSerialNumber), $strSeperator, $patientID, $strSeperator, $studyID, $strSeperator, string(siemens/YAPS/ReconMeasDependencies/Noise))"/>
+                                    select="concat(string(siemens/DICOM/DeviceSerialNumber), $strSeperator, $patientID, $strSeperator, $studyID, $strSeperator, string(siemens/YAPS/ReconMeasDependencies/2))"/>
                         </measurementID>
                     </measurementDependency>
                 </xsl:if>
@@ -385,7 +385,7 @@
                             </xsl:when>
                             <xsl:otherwise>
                                 <x>
-                                    <xsl:value-of select="siemens/IRIS/DERIVED/imageColumns"/>
+                                    <xsl:value-of select="siemens/IRIS/DERIVED/ImageColumns"/>
                                 </x>
                             </xsl:otherwise>
                         </xsl:choose>
@@ -451,10 +451,10 @@
                 <reconSpace>
                     <matrixSize>
                         <x>
-                            <xsl:value-of select="siemens/IRIS/DERIVED/imageColumns"/>
+                            <xsl:value-of select="siemens/IRIS/DERIVED/ImageColumns"/>
                         </x>
                         <y>
-                            <xsl:value-of select="siemens/IRIS/DERIVED/imageLines"/>
+                            <xsl:value-of select="siemens/IRIS/DERIVED/ImageLines"/>
                         </y>
                         <xsl:choose>
                             <xsl:when test="siemens/YAPS/i3DFTLength = 1">
