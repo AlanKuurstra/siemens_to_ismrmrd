@@ -120,7 +120,7 @@ bool validXmlName(const std::string& elementName) {
 	return valid;
 };
 
-void openTag(std::stringstream& ss, std::string& name) {
+void openTag(std::stringstream& ss, std::string& name, const std::vector<std::tuple<std::string, std::string>>& attributes = {}) {
 	ss << "<";
 	if (validXmlName(name)) {
 		ss << name;
@@ -131,7 +131,12 @@ void openTag(std::stringstream& ss, std::string& name) {
 		ss << invalidTagName << " original=\"" << encoded << '"';
 		name = invalidTagName;
 	}
-	ss << ">" << std::endl;
+	if (!attributes.empty()) {
+		for (auto& attr_pair : attributes) {
+			ss << " " << std::get<0>(attr_pair) << "=" << '"' <<std::get<1>(attr_pair) << '"';
+		}
+	}
+	ss << ">";
 }
 
 void closeTag(std::stringstream& ss, const std::string& name) {
@@ -141,7 +146,7 @@ void closeTag(std::stringstream& ss, const std::string& name) {
 std::string getXMLString::operator()(const XNodeParamMap& node) const {
 	std::stringstream str;
 	auto name = node.name_;
-	openTag(str, name);
+	openTag(str, name, attributes_);
 	BOOST_FOREACH(XNode const &cnode, node.children_) {
 					str << boost::apply_visitor(getXMLString(), cnode);
 				}
@@ -157,28 +162,46 @@ std::string getXMLString::operator()(const XNodeParamArray& node) const {
 		}
 	}
 	std::stringstream str;
-	auto name = node.name_;
-	openTag(str, name);
+	// no openTag() for ParamArray node - the children (array elements) share the parent's name and are given an
+	// attribute "array_index" to document order
+	std::vector<std::tuple<std::string, std::string>> attributes = {{"array_index",""}};
+	int count =0;
 	BOOST_FOREACH(XNode const &cnode, node.children_) {
-					str << apply_visitor(getXMLString(), cnode) << std::endl;
+					std::get<1>(attributes.back()) = std::to_string(count);
+					str << apply_visitor(getXMLString(attributes), cnode) << std::endl;
+					count++;
 				}
 	/*
 	for (unsigned int i = 0; i < node.values_.size(); i++) {
 		str << "<" << node.name_ << ">" << node.values_[i] << "</" << node.name_ << ">" << std::endl;
 	}
 	*/
-	closeTag(str, name);
 	return str.str();
 }
 
 std::string getXMLString::operator()(const XNodeParamValue& node) const {
 	std::stringstream str;
 	auto name = node.name_;
-	openTag(str, name);
-	for (unsigned int i = 0; i < node.values_.size(); i++) {
-		str << "<value>" << boost::apply_visitor(encodeXNodeVal(), node.values_[i]) << "</value>" << std::endl;
+	if (node.values_.size() == 1) {
+		openTag(str, name, attributes_);
+		str << boost::apply_visitor(encodeXNodeVal(), node.values_[0]);
+		closeTag(str, name);
 	}
-	closeTag(str, name);
+	else {
+		// attribute name "value_index" reserved for documenting order
+		for (auto& attr : attributes_){
+			assert(std::get<0>(attr).compare("value_index")!=0);
+		}
+		const_cast<std::vector<std::tuple<std::string, std::string>>&>(attributes_).emplace_back("value_index","");
+		std::tuple<std::string, std::string>& indx = const_cast<std::vector<std::tuple<std::string, std::string>>&>(attributes_).back();
+		for (unsigned int i = 0; i < node.values_.size(); i++) {
+			std::get<1>(indx) = std::to_string(i);
+			openTag(str, name, attributes_);
+			str << boost::apply_visitor(encodeXNodeVal(), node.values_[i]);
+			closeTag(str, name);
+		}
+		const_cast<std::vector<std::tuple<std::string, std::string>>&>(attributes_).pop_back();
+	}
 	return str.str();
 }
 
@@ -221,7 +244,7 @@ bool setNodeValues :: operator()(XNodeParamValue& node) {
 bool XNodeParamArray :: expand_children() {
 	if (!children_.size()) {
 		if (boost::apply_visitor(getNodeName(), default_).empty()){
-			boost::apply_visitor(setNodeName("value"), default_);
+			boost::apply_visitor(setNodeName(this->name_), default_);
 		}
 		for (unsigned int i = 0; i < values_.size(); i++) {
 			children_.push_back(default_);

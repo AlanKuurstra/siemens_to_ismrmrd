@@ -188,9 +188,14 @@ public:
 
 class getXMLString : public boost::static_visitor<std::string> {
 public:
+	getXMLString(const std::vector<std::tuple<std::string, std::string>>& attributes = {})
+	: attributes_(attributes)
+	{}
 	std::string operator()(const XNodeParamMap& node) const;
 	std::string operator()(const XNodeParamArray& node) const;
 	std::string operator()(const XNodeParamValue& node) const;
+protected:
+	const std::vector<std::tuple<std::string, std::string>>& attributes_;
 };
 
 
