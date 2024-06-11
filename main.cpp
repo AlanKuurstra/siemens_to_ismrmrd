@@ -836,7 +836,7 @@ int main(int argc, char* argv[]) {
         if (isNX) {
             default_parammap_xsl = "IsmrmrdParameterMap_Siemens_NX.xsl";
         } else {
-            default_parammap_xsl = "IsmrmrdParameterMap_Siemens.xsl";
+            default_parammap_xsl = "IsmrmrdParameterMap_Siemens_DEFAULT.xsl";
         }
         std::string parammap_xsl_actual_file = select_file(parammap_xsl, default_parammap_xsl, all_measurements, currentMeas);
         std::string parammap_xsl_content = get_file_content(parammap_xsl_actual_file);

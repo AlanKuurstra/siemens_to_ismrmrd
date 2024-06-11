@@ -135,32 +135,32 @@
                     <xsl:value-of select="siemens/MEAS/tProtocolName"/>
                 </protocolName>
 
-                <xsl:if test="siemens/YAPS/ReconMeasDependencies/0 > 0">
+                <xsl:if test="siemens/YAPS/ReconMeasDependencies[1] > 0">
                     <measurementDependency>
                         <dependencyType>RFMap</dependencyType>
                         <measurementID>
                             <xsl:value-of
-                                    select="concat(string(siemens/DICOM/DeviceSerialNumber), $strSeperator, $patientID, $strSeperator, $studyID, $strSeperator, string(siemens/YAPS/ReconMeasDependencies/0))"/>
+                                    select="concat(string(siemens/DICOM/DeviceSerialNumber), $strSeperator, $patientID, $strSeperator, $studyID, $strSeperator, string(siemens/YAPS/ReconMeasDependencies[1]))"/>
                         </measurementID>
                     </measurementDependency>
                 </xsl:if>
 
-                <xsl:if test="siemens/YAPS/ReconMeasDependencies/1 > 0">
+                <xsl:if test="siemens/YAPS/ReconMeasDependencies[2] > 0">
                     <measurementDependency>
                         <dependencyType>SenMap</dependencyType>
                         <measurementID>
                             <xsl:value-of
-                                    select="concat(string(siemens/DICOM/DeviceSerialNumber), $strSeperator, $patientID, $strSeperator, $studyID, $strSeperator, string(siemens/YAPS/ReconMeasDependencies/1))"/>
+                                    select="concat(string(siemens/DICOM/DeviceSerialNumber), $strSeperator, $patientID, $strSeperator, $studyID, $strSeperator, string(siemens/YAPS/ReconMeasDependencies[2]))"/>
                         </measurementID>
                     </measurementDependency>
                 </xsl:if>
 
-                <xsl:if test="siemens/YAPS/ReconMeasDependencies/2 > 0">
+                <xsl:if test="siemens/YAPS/ReconMeasDependencies[3] > 0">
                     <measurementDependency>
                         <dependencyType>Noise</dependencyType>
                         <measurementID>
                             <xsl:value-of
-                                    select="concat(string(siemens/DICOM/DeviceSerialNumber), $strSeperator, $patientID, $strSeperator, $studyID, $strSeperator, string(siemens/YAPS/ReconMeasDependencies/2))"/>
+                                    select="concat(string(siemens/DICOM/DeviceSerialNumber), $strSeperator, $patientID, $strSeperator, $studyID, $strSeperator, string(siemens/YAPS/ReconMeasDependencies[3]))"/>
                         </measurementID>
                     </measurementDependency>
                 </xsl:if>
@@ -189,54 +189,34 @@
                 <!-- Coil Labels -->
                 <xsl:choose>
                     <!-- VD line with dual density -->
-                    <xsl:when test="siemens/MEAS/asCoilSelectMeas/ADC/lADCChannelConnected">
-                        <xsl:variable name="NumberOfSelectedCoils">
-                            <xsl:value-of
-                                    select="count(siemens/MEAS/asCoilSelectMeas/Select/lElementSelected[text() = '1'])"/>
-                        </xsl:variable>
-                        <xsl:for-each
-                                select="siemens/MEAS/asCoilSelectMeas/ADC/lADCChannelConnected[position() >= 1  and not(position() > $NumberOfSelectedCoils)]">
-                            <xsl:sort data-type="number"
-                                      select="."/>
-                            <xsl:variable name="CurADC"
-                                          select="."/>
-                            <xsl:variable name="CurADCIndex"
-                                          select="position()"/>
-                            <xsl:for-each
-                                    select="../lADCChannelConnected[position() >= 1  and not(position() > $NumberOfSelectedCoils)]">
-                                <xsl:if test="$CurADC = .">
-                                    <xsl:variable name="CurCoil" select="position()"/>
-                                    <xsl:variable name="CurCoilID" select="../../ID/tCoilID[$CurCoil]"/>
-                                    <xsl:variable name="CurCoilElement" select="../../Elem/tElement[$CurCoil]"/>
-                                    <xsl:variable name="CurCoilCopyID" select="../../Coil/lCoilCopy[$CurCoil]"/>
-                                    <coilLabel>
-                                        <coilNumber>
-                                            <xsl:value-of select="number(../lADCChannelConnected[$CurADCIndex])"/>
-                                        </coilNumber>
-                                        <coilName>
-                                            <xsl:value-of select="$CurCoilID"/>:<xsl:value-of
-                                                select="string($CurCoilCopyID)"/>:<xsl:value-of
-                                                select="$CurCoilElement"/>
-                                        </coilName>
-                                    </coilLabel>
-                                </xsl:if>
-                            </xsl:for-each>
-                        </xsl:for-each>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <!-- This is probably VB -->
-                        <xsl:for-each select="siemens/MEAS/asCoilSelectMeas/ID/tCoilID">
-                            <xsl:variable name="CurCoil"
-                                          select="position()"/>
+                    <xsl:when test="siemens/MEAS/sCoilSelectMeas/aRxCoilSelectData/asList/lADCChannelConnected">
+                        <xsl:for-each select="siemens/MEAS/sCoilSelectMeas/aRxCoilSelectData/asList[lElementSelected[text() = '1']]">
+                            <xsl:sort select="lADCChannelConnected" data-type="number"/>
                             <coilLabel>
                                 <coilNumber>
-                                    <xsl:value-of select="$CurCoil -1"/>
+                                    <xsl:value-of select="lADCChannelConnected"/>
                                 </coilNumber>
                                 <coilName>
-                                    <xsl:value-of select="."/>:<xsl:value-of select="../../Elem/tElement[$CurCoil]"/>
+                                    <xsl:value-of select="sCoilElementID/tCoilID"/>:<xsl:value-of select="sCoilElementID/lCoilCopy"/>:<xsl:value-of select="sCoilElementID/tElement"/>
                                 </coilName>
                             </coilLabel>
                         </xsl:for-each>
+
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <!-- This is probably VB -->
+                        <xsl:for-each select="siemens/MEAS/sCoilSelectMeas/aRxCoilSelectData/asList[sCoilElementID/tCoilID!='']">
+                            <xsl:sort select="@array_index" data-type="number"/>
+                            <coilLabel>
+                                <coilNumber>
+                                    <xsl:value-of select="@array_index + 1"/>
+                                </coilNumber>
+                                <coilName>
+                                    <xsl:value-of select="sCoilElementID/tCoilID"/>:<xsl:value-of select="sCoilElementID/tElement"/>
+                                </coilName>
+                            </coilLabel>
+                        </xsl:for-each>
+
                     </xsl:otherwise>
                 </xsl:choose>
 
@@ -429,22 +409,22 @@
                             <xsl:when test="siemens/MEAS/sKSpace/ucTrajectory = 1">
                                 <x>
                                     <xsl:value-of
-                                            select="siemens/MEAS/sSliceArray/asSlice/s0/dReadoutFOV * siemens/YAPS/flReadoutOSFactor"/>
+                                            select="siemens/MEAS/sSliceArray/asSlice[1]/dReadoutFOV * siemens/YAPS/flReadoutOSFactor"/>
                                 </x>
                             </xsl:when>
                             <xsl:otherwise>
                                 <x>
-                                    <xsl:value-of select="siemens/MEAS/sSliceArray/asSlice/s0/dReadoutFOV"/>
+                                    <xsl:value-of select="siemens/MEAS/sSliceArray/asSlice[1]/dReadoutFOV"/>
                                 </x>
                             </xsl:otherwise>
                         </xsl:choose>
                         <y>
                             <xsl:value-of
-                                    select="siemens/MEAS/sSliceArray/asSlice/s0/dPhaseFOV * (1+$phaseOversampling)"/>
+                                    select="siemens/MEAS/sSliceArray/asSlice[1]/dPhaseFOV * (1+$phaseOversampling)"/>
                         </y>
                         <z>
                             <xsl:value-of
-                                    select="siemens/MEAS/sSliceArray/asSlice/s0/dThickness * (1+$sliceOversampling)"/>
+                                    select="siemens/MEAS/sSliceArray/asSlice[1]/dThickness * (1+$sliceOversampling)"/>
                         </z>
                     </fieldOfView_mm>
                 </encodedSpace>
@@ -469,13 +449,13 @@
                     </matrixSize>
                     <fieldOfView_mm>
                         <x>
-                            <xsl:value-of select="siemens/MEAS/sSliceArray/asSlice/s0/dReadoutFOV"/>
+                            <xsl:value-of select="siemens/MEAS/sSliceArray/asSlice[1]/dReadoutFOV"/>
                         </x>
                         <y>
-                            <xsl:value-of select="siemens/MEAS/sSliceArray/asSlice/s0/dPhaseFOV"/>
+                            <xsl:value-of select="siemens/MEAS/sSliceArray/asSlice[1]/dPhaseFOV"/>
                         </y>
                         <z>
-                            <xsl:value-of select="siemens/MEAS/sSliceArray/asSlice/s0/dThickness"/>
+                            <xsl:value-of select="siemens/MEAS/sSliceArray/asSlice[1]/dThickness"/>
                         </z>
                     </fieldOfView_mm>
                 </reconSpace>
@@ -767,14 +747,14 @@
                     <userParameterLong>
                         <name>VENC_0</name>
                         <value>
-                            <xsl:value-of select="siemens/MEAS/sAngio/sFlowArray/asElm/s0/nVelocity"/>
+                            <xsl:value-of select="siemens/MEAS/sAngio/sFlowArray/asElm[1]/nVelocity"/>
                         </value>
                     </userParameterLong>
                   
                     <userParameterLong>
                          <name>Flow_Dir</name>
                          <value>
-                             <xsl:value-of select="siemens/MEAS/sAngio/sFlowArray/asElm/s0/nDir" />
+                             <xsl:value-of select="siemens/MEAS/sAngio/sFlowArray/asElm[1]/nDir" />
                          </value>
                     </userParameterLong>
                 </xsl:if>
@@ -1045,11 +1025,11 @@
                     </userParameterDouble>
                 </xsl:if>
 
-                <xsl:if test="siemens/MEAS/sSliceArray/asSlice/s0/dInPlaneRot">
+                <xsl:if test="siemens/MEAS/sSliceArray/asSlice[1]/dInPlaneRot">
                     <userParameterDouble>
                         <name>InPlaneRot</name>
                         <value>
-                            <xsl:value-of select="siemens/MEAS/sSliceArray/asSlice/s0/dInPlaneRot" />
+                            <xsl:value-of select="siemens/MEAS/sSliceArray/asSlice[1]/dInPlaneRot" />
                         </value>
                     </userParameterDouble>
                 </xsl:if>
